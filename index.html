@@ -61,26 +61,18 @@
     }
 
     .icon {
-      width: 100px;
-      height: 100px;
-      background: var(--bg2);
-      border-radius: 22px;
-      border: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      width: 120px;
+      height: 120px;
+      border-radius: 27px;
       margin-bottom: 8px;
-      box-shadow: 0 0 60px rgba(0,0,0,0.6);
+      box-shadow: 0 8px 40px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.06);
+      overflow: hidden;
+      flex-shrink: 0;
     }
-    .icon-e {
-      font-size: 52px;
-      font-weight: 700;
-      letter-spacing: -0.02em;
-      background: linear-gradient(160deg, #e8e8e8 0%, #888 50%, #c8c8c8 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
+    .icon img {
+      width: 100%;
+      height: 100%;
+      display: block;
     }
 
     h1 {
@@ -204,7 +196,7 @@
   </nav>
 
   <section class="hero">
-    <div class="icon"><span class="icon-e">E</span></div>
+    <div class="icon"><img src="AppIcon-1024.png" alt="EVoice app icon"></div>
     <div class="badge"><span class="badge-dot"></span>Available on iPhone &amp; CarPlay</div>
     <h1>Voice AI for<br><em>the road</em></h1>
     <p class="subtitle">Hands-free control of your smart home, music, navigation, and more — designed for CarPlay.</p>
