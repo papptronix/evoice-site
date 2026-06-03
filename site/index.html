@@ -147,17 +147,16 @@
     }
     .feature-icon {
       margin-bottom: 16px;
-      color: var(--e-color);
     }
-    .feature-icon svg {
+    /* Monochrome icons from assets/icons/, tinted with the accent color via a
+       CSS mask so we reference the shared SVG files instead of inlining them. */
+    .feature-icon .ico {
       width: 26px;
       height: 26px;
       display: block;
-      stroke: currentColor;
-      stroke-width: 1.5;
-      stroke-linecap: square;
-      stroke-linejoin: miter;
-      fill: none;
+      background-color: var(--e-color);
+      -webkit-mask: var(--icon) center / contain no-repeat;
+              mask: var(--icon) center / contain no-repeat;
     }
     .feature h3 {
       font-size: 15px;
@@ -221,42 +220,42 @@
   <section class="features">
     <div class="feature">
       <div class="feature-icon">
-        <svg viewBox="0 0 24 24"><path d="M4 11 L11 5.2 H13 L20 11"/><path d="M6 9.6 V20 H18 V9.6"/><path d="M10 20 V14 H14 V20"/></svg>
+        <span class="ico" style="--icon: url('assets/icons/home.svg')"></span>
       </div>
       <h3>Smart Home</h3>
       <p>Control lights, locks, thermostats, and scenes across Google Home and Apple HomeKit — just by speaking.</p>
     </div>
     <div class="feature">
       <div class="feature-icon">
-        <svg viewBox="0 0 24 24"><path d="M12 3.5 L19.5 19.5 L12 15.8 L4.5 19.5 Z"/></svg>
+        <span class="ico" style="--icon: url('assets/icons/nav.svg')"></span>
       </div>
       <h3>Navigation</h3>
       <p>Search for places, start directions, and check live drive times without touching your phone.</p>
     </div>
     <div class="feature">
       <div class="feature-icon">
-        <svg viewBox="0 0 24 24"><path d="M9 17.5 V6 L19 3.4 V15"/><circle cx="6.4" cy="17.5" r="2.6" fill="currentColor" stroke="none"/><circle cx="16.4" cy="15" r="2.6" fill="currentColor" stroke="none"/></svg>
+        <span class="ico" style="--icon: url('assets/icons/music.svg')"></span>
       </div>
       <h3>Music &amp; Media</h3>
       <p>Play any song, artist, playlist, or podcast from Apple Music. Skip, pause, and resume hands-free.</p>
     </div>
     <div class="feature">
       <div class="feature-icon">
-        <svg viewBox="0 0 24 24"><path d="M5 6.5 H16.6 L19 8.9 V20 H5 Z"/><path d="M5 10.5 H19"/><path d="M9 4.5 V7.5"/><path d="M15 4.5 V7.5"/><path d="M8.5 14.8 L10.8 17 L15.2 12.8"/></svg>
+        <span class="ico" style="--icon: url('assets/icons/calendar.svg')"></span>
       </div>
       <h3>Calendar &amp; Reminders</h3>
       <p>Check your schedule, create events, set reminders, and take notes without glancing at a screen.</p>
     </div>
     <div class="feature">
       <div class="feature-icon">
-        <svg viewBox="0 0 24 24"><path d="M6 4.5 H9 L10.8 9 L8.3 10.6 A11 11 0 0 0 13.4 15.7 L15 13.2 L19.5 15 V18 A1.8 1.8 0 0 1 17.7 19.8 A14.5 14.5 0 0 1 4.2 6.3 A1.8 1.8 0 0 1 6 4.5 Z"/></svg>
+        <span class="ico" style="--icon: url('assets/icons/phone.svg')"></span>
       </div>
       <h3>Calls &amp; Messages</h3>
       <p>Call or text anyone in your contacts by name, and hear incoming messages read aloud as they arrive.</p>
     </div>
     <div class="feature">
       <div class="feature-icon">
-        <svg viewBox="0 0 24 24"><path d="M8 4.5 L11.5 8 L8 11.5 L4.5 8 Z"/><circle cx="8" cy="8" r="1.2" fill="currentColor" stroke="none"/><path d="M10.4 9.6 L19.5 18.7"/><path d="M16.2 15.4 L18.4 13.2"/><path d="M18.6 17.8 L20.8 15.6"/></svg>
+        <span class="ico" style="--icon: url('assets/icons/key.svg')"></span>
       </div>
       <h3>Your Keys, Your Data</h3>
       <p>Bring your own OpenAI or Gemini API key. No accounts, no subscriptions, no servers we run.</p>
