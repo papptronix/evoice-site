@@ -325,7 +325,7 @@
       });
 
       var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      var SPEED = 0.5;          // px/frame — gentle left → right drift
+      var SPEED = 0.5;          // px/frame — gentle right → left drift
       var PAUSE_MS = 5000;      // resume 5s after the last manual interaction
       var resumeAt = 0;         // auto-scroll stays paused until this timestamp
       var hovering = false;
@@ -376,7 +376,7 @@
 
       function tick(now) {
         if (!reduceMotion && !hovering && !dragging && now >= resumeAt) {
-          viewport.scrollLeft -= SPEED;   // content drifts left → right
+          viewport.scrollLeft += SPEED;   // content drifts right → left
           wrap();
         }
         requestAnimationFrame(tick);
