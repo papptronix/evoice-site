@@ -317,12 +317,16 @@
       var track = document.querySelector('.features-track');
       if (!viewport || !track) return;
 
-      // Duplicate the cards so the scroll loops seamlessly.
-      Array.prototype.slice.call(track.children).forEach(function (card) {
-        var clone = card.cloneNode(true);
-        clone.setAttribute('aria-hidden', 'true');
-        track.appendChild(clone);
-      });
+      // Triple the cards so we can sit in the middle copy and wrap seamlessly
+      // in either direction without ever hitting a native scroll edge.
+      var originals = Array.prototype.slice.call(track.children);
+      for (var c = 0; c < 2; c++) {
+        originals.forEach(function (card) {
+          var clone = card.cloneNode(true);
+          clone.setAttribute('aria-hidden', 'true');
+          track.appendChild(clone);
+        });
+      }
 
       var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       var SPEED = 0.5;          // px/frame — gentle right → left drift
@@ -331,17 +335,17 @@
       var hovering = false;
       var single = 1;           // width of one copy of the card set
 
-      function measure() { single = track.scrollWidth / 2 || 1; }
+      function measure() { single = track.scrollWidth / 3 || 1; }
       measure();
-      window.addEventListener('load', measure);
+      window.addEventListener('load', function () { measure(); viewport.scrollLeft = single; });
       window.addEventListener('resize', measure);
 
-      // Start mid-band so there's room to scroll either direction.
+      // Start in the middle copy so there's a full copy on each side.
       viewport.scrollLeft = single;
 
-      // Keep the scroll position within one copy so the loop is seamless.
+      // Keep the scroll position inside the middle copy [single, 2*single).
       function wrap() {
-        if (viewport.scrollLeft <= 0) viewport.scrollLeft += single;
+        if (viewport.scrollLeft < single) viewport.scrollLeft += single;
         else if (viewport.scrollLeft >= single * 2) viewport.scrollLeft -= single;
       }
 
