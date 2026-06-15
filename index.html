@@ -132,18 +132,35 @@
     }
     .app-store-btn:hover { opacity: 0.85; }
 
-    /* features */
+    /* features — auto-scrolling marquee */
     .features {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 1px;
-      background: var(--border);
+      overflow: hidden;
       border-top: 1px solid var(--border);
       border-bottom: 1px solid var(--border);
+      /* fade the edges so cards slide in/out softly */
+      -webkit-mask-image: linear-gradient(to right, transparent, #000 6%, #000 94%, transparent);
+              mask-image: linear-gradient(to right, transparent, #000 6%, #000 94%, transparent);
+    }
+    .features-track {
+      display: flex;
+      width: max-content;
+      /* moves the cards left → right; duplicated content makes it seamless */
+      animation: marquee 70s linear infinite;
+    }
+    .features:hover .features-track { animation-play-state: paused; }
+    @keyframes marquee {
+      from { transform: translateX(-50%); }
+      to   { transform: translateX(0); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .features-track { animation: none; }
     }
     .feature {
       background: var(--bg);
       padding: 36px 32px;
+      width: 300px;
+      flex-shrink: 0;
+      border-right: 1px solid var(--border);
     }
     .feature-icon {
       margin-bottom: 16px;
@@ -217,7 +234,8 @@
     </a>
   </section>
 
-  <section class="features">
+  <section class="features" aria-label="Features">
+   <div class="features-track">
     <div class="feature">
       <div class="feature-icon">
         <span class="ico" style="--icon: url('assets/icons/home.svg')"></span>
@@ -238,6 +256,13 @@
       </div>
       <h3>Music &amp; Media</h3>
       <p>Play any song, artist, playlist, or podcast from Apple Music. Skip, pause, and resume hands-free.</p>
+    </div>
+    <div class="feature">
+      <div class="feature-icon">
+        <span class="ico" style="--icon: url('assets/icons/knob.svg')"></span>
+      </div>
+      <h3>Auto DJ</h3>
+      <p>Tell it the vibe and let it run. Aux builds an endless, hands-free queue that keeps the music flowing, rolling in the next track before the last one ends.</p>
     </div>
     <div class="feature">
       <div class="feature-icon">
@@ -274,6 +299,7 @@
       <h3>Your Keys, Your Data</h3>
       <p>Bring your own OpenAI or Gemini API key. No accounts, no subscriptions, no servers we run.</p>
     </div>
+   </div>
   </section>
 
   <footer>
@@ -285,6 +311,19 @@
       <a href="mailto:papptronix@gmail.com">Contact</a>
     </div>
   </footer>
+
+  <script>
+    // Duplicate the feature cards so the marquee loops seamlessly.
+    (function () {
+      var track = document.querySelector('.features-track');
+      if (!track) return;
+      Array.prototype.slice.call(track.children).forEach(function (card) {
+        var clone = card.cloneNode(true);
+        clone.setAttribute('aria-hidden', 'true');
+        track.appendChild(clone);
+      });
+    })();
+  </script>
 
 </body>
 </html>
