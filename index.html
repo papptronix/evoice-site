@@ -132,28 +132,25 @@
     }
     .app-store-btn:hover { opacity: 0.85; }
 
-    /* features — auto-scrolling marquee */
+    /* features — JS-driven auto-scroll so it can be grabbed/overridden */
     .features {
-      overflow: hidden;
+      overflow-x: auto;
+      overflow-y: hidden;
+      cursor: grab;
+      user-select: none;
+      -webkit-user-select: none;
+      scrollbar-width: none;            /* Firefox: hide scrollbar */
       border-top: 1px solid var(--border);
       border-bottom: 1px solid var(--border);
       /* fade the edges so cards slide in/out softly */
       -webkit-mask-image: linear-gradient(to right, transparent, #000 6%, #000 94%, transparent);
               mask-image: linear-gradient(to right, transparent, #000 6%, #000 94%, transparent);
     }
+    .features::-webkit-scrollbar { display: none; }   /* Safari/Chrome: hide scrollbar */
+    .features.grabbing { cursor: grabbing; }
     .features-track {
       display: flex;
       width: max-content;
-      /* moves the cards left → right; duplicated content makes it seamless */
-      animation: marquee 70s linear infinite;
-    }
-    .features:hover .features-track { animation-play-state: paused; }
-    @keyframes marquee {
-      from { transform: translateX(-50%); }
-      to   { transform: translateX(0); }
-    }
-    @media (prefers-reduced-motion: reduce) {
-      .features-track { animation: none; }
     }
     .feature {
       background: var(--bg);
@@ -313,15 +310,78 @@
   </footer>
 
   <script>
-    // Duplicate the feature cards so the marquee loops seamlessly.
+    // Auto-scrolling features marquee that the visitor can grab and override.
+    // Manual scroll/drag/swipe pauses the drift for 5s, then it resumes.
     (function () {
+      var viewport = document.querySelector('.features');
       var track = document.querySelector('.features-track');
-      if (!track) return;
+      if (!viewport || !track) return;
+
+      // Duplicate the cards so the scroll loops seamlessly.
       Array.prototype.slice.call(track.children).forEach(function (card) {
         var clone = card.cloneNode(true);
         clone.setAttribute('aria-hidden', 'true');
         track.appendChild(clone);
       });
+
+      var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      var SPEED = 0.5;          // px/frame — gentle left → right drift
+      var PAUSE_MS = 5000;      // resume 5s after the last manual interaction
+      var resumeAt = 0;         // auto-scroll stays paused until this timestamp
+      var hovering = false;
+      var single = 1;           // width of one copy of the card set
+
+      function measure() { single = track.scrollWidth / 2 || 1; }
+      measure();
+      window.addEventListener('load', measure);
+      window.addEventListener('resize', measure);
+
+      // Start mid-band so there's room to scroll either direction.
+      viewport.scrollLeft = single;
+
+      // Keep the scroll position within one copy so the loop is seamless.
+      function wrap() {
+        if (viewport.scrollLeft <= 0) viewport.scrollLeft += single;
+        else if (viewport.scrollLeft >= single * 2) viewport.scrollLeft -= single;
+      }
+
+      function override() { resumeAt = performance.now() + PAUSE_MS; }
+
+      // Any of these count as the visitor taking over.
+      viewport.addEventListener('wheel', override, { passive: true });
+      viewport.addEventListener('touchstart', override, { passive: true });
+      viewport.addEventListener('scroll', wrap, { passive: true });
+      viewport.addEventListener('mouseenter', function () { hovering = true; });
+      viewport.addEventListener('mouseleave', function () { hovering = false; });
+
+      // Click-and-drag to scroll on the desktop.
+      var dragging = false, startX = 0, startScroll = 0;
+      viewport.addEventListener('pointerdown', function (e) {
+        dragging = true;
+        startX = e.clientX;
+        startScroll = viewport.scrollLeft;
+        viewport.classList.add('grabbing');
+        viewport.setPointerCapture(e.pointerId);
+        override();
+      });
+      viewport.addEventListener('pointermove', function (e) {
+        if (!dragging) return;
+        viewport.scrollLeft = startScroll - (e.clientX - startX);
+        wrap();
+        override();
+      });
+      function endDrag() { dragging = false; viewport.classList.remove('grabbing'); override(); }
+      viewport.addEventListener('pointerup', endDrag);
+      viewport.addEventListener('pointercancel', endDrag);
+
+      function tick(now) {
+        if (!reduceMotion && !hovering && !dragging && now >= resumeAt) {
+          viewport.scrollLeft -= SPEED;   // content drifts left → right
+          wrap();
+        }
+        requestAnimationFrame(tick);
+      }
+      requestAnimationFrame(tick);
     })();
   </script>
 
