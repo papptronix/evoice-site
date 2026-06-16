@@ -333,20 +333,25 @@
       var PAUSE_MS = 5000;      // resume 5s after the last manual interaction
       var resumeAt = 0;         // auto-scroll stays paused until this timestamp
       var hovering = false;
+      var dragging = false;
       var single = 1;           // width of one copy of the card set
+      var pos = 1;              // float scroll position — the source of truth
 
       function measure() { single = track.scrollWidth / 3 || 1; }
-      measure();
-      window.addEventListener('load', function () { measure(); viewport.scrollLeft = single; });
-      window.addEventListener('resize', measure);
-
       // Start in the middle copy so there's a full copy on each side.
-      viewport.scrollLeft = single;
+      function recenter() { measure(); pos = single; viewport.scrollLeft = pos; }
+      recenter();
+      // Re-measure once images/fonts settle — card widths can shift.
+      window.addEventListener('load', recenter);
+      window.addEventListener('resize', recenter);
 
-      // Keep the scroll position inside the middle copy [single, 2*single).
-      function wrap() {
-        if (viewport.scrollLeft < single) viewport.scrollLeft += single;
-        else if (viewport.scrollLeft >= single * 2) viewport.scrollLeft -= single;
+      // Wrap a position into the middle copy [single, 2*single) so the loop is
+      // seamless in both directions.
+      function wrap(v) {
+        if (single <= 0) return v;
+        if (v < single) return v + single;
+        if (v >= single * 2) return v - single;
+        return v;
       }
 
       function override() { resumeAt = performance.now() + PAUSE_MS; }
@@ -354,12 +359,11 @@
       // Any of these count as the visitor taking over.
       viewport.addEventListener('wheel', override, { passive: true });
       viewport.addEventListener('touchstart', override, { passive: true });
-      viewport.addEventListener('scroll', wrap, { passive: true });
       viewport.addEventListener('mouseenter', function () { hovering = true; });
       viewport.addEventListener('mouseleave', function () { hovering = false; });
 
       // Click-and-drag to scroll on the desktop.
-      var dragging = false, startX = 0, startScroll = 0;
+      var startX = 0, startScroll = 0;
       viewport.addEventListener('pointerdown', function (e) {
         dragging = true;
         startX = e.clientX;
@@ -371,7 +375,6 @@
       viewport.addEventListener('pointermove', function (e) {
         if (!dragging) return;
         viewport.scrollLeft = startScroll - (e.clientX - startX);
-        wrap();
         override();
       });
       function endDrag() { dragging = false; viewport.classList.remove('grabbing'); override(); }
@@ -379,9 +382,20 @@
       viewport.addEventListener('pointercancel', endDrag);
 
       function tick(now) {
-        if (!reduceMotion && !hovering && !dragging && now >= resumeAt) {
-          viewport.scrollLeft += SPEED;   // content drifts right → left
-          wrap();
+        if (single > 1) {
+          if (!reduceMotion && !hovering && !dragging && now >= resumeAt) {
+            // Auto-driving: advance our float position and write it out.
+            // scrollLeft rounds to an integer, so reading it back and adding a
+            // sub-pixel step rounds the step away and the marquee never moves —
+            // keeping our own float is what makes it scroll at all.
+            pos = wrap(pos + SPEED);
+            viewport.scrollLeft = pos;
+          } else {
+            // Paused (hover / drag / within the 5s window): follow the user's
+            // scroll position, wrapping so manual scrolling loops too.
+            pos = wrap(viewport.scrollLeft);
+            if (pos !== viewport.scrollLeft) viewport.scrollLeft = pos;
+          }
         }
         requestAnimationFrame(tick);
       }
