@@ -343,7 +343,14 @@
       recenter();
       // Re-measure once images/fonts settle — card widths can shift.
       window.addEventListener('load', recenter);
-      window.addEventListener('resize', recenter);
+      // On resize, only re-measure the copy width — never recenter. Mobile
+      // browsers fire resize when the URL bar shows/hides during a scroll, and
+      // snapping back to center would reset the carousel every time you scroll.
+      window.addEventListener('resize', function () {
+        var prev = single;
+        measure();
+        if (single !== prev) pos = wrap(pos); // width genuinely changed
+      });
 
       // Wrap a position into the middle copy [single, 2*single) so the loop is
       // seamless in both directions.
