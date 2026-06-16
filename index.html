@@ -356,15 +356,30 @@
 
       function override() { resumeAt = performance.now() + PAUSE_MS; }
 
-      // Any of these count as the visitor taking over.
-      viewport.addEventListener('wheel', override, { passive: true });
-      viewport.addEventListener('touchstart', override, { passive: true });
+      // Only a HORIZONTAL wheel/trackpad gesture overrides the marquee; a
+      // vertical wheel is the user scrolling the page, so it must not pause it.
+      viewport.addEventListener('wheel', function (e) {
+        if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) override();
+      }, { passive: true });
+      // Touch: likewise only a horizontal swipe overrides — a vertical swipe
+      // scrolls the page.
+      var touchX = 0, touchY = 0;
+      viewport.addEventListener('touchstart', function (e) {
+        var t = e.touches[0];
+        if (t) { touchX = t.clientX; touchY = t.clientY; }
+      }, { passive: true });
+      viewport.addEventListener('touchmove', function (e) {
+        var t = e.touches[0];
+        if (t && Math.abs(t.clientX - touchX) > Math.abs(t.clientY - touchY)) override();
+      }, { passive: true });
       viewport.addEventListener('mouseenter', function () { hovering = true; });
       viewport.addEventListener('mouseleave', function () { hovering = false; });
 
-      // Click-and-drag to scroll on the desktop.
+      // Click-and-drag to scroll on the desktop (mouse only — touch uses native
+      // scrolling so it doesn't fight vertical page scroll).
       var startX = 0, startScroll = 0;
       viewport.addEventListener('pointerdown', function (e) {
+        if (e.pointerType !== 'mouse') return;
         dragging = true;
         startX = e.clientX;
         startScroll = viewport.scrollLeft;
